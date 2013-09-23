@@ -1,3 +1,9 @@
+# output dir
+_out
+
+# emacs files
+*~
+
 *.py[cod]
 
 # C extensions
