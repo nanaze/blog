@@ -3,6 +3,7 @@ _out
 
 # emacs files
 *~
+\#*
 
 *.py[cod]
 
