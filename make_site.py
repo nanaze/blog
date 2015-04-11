@@ -55,6 +55,33 @@ def GetContent(content_dir):
 
   return ret
 
+def _GetText(node):
+  ret = ''
+  for node in _YieldNodes(node):
+    if node.nodeType == xml.dom.Node.TEXT_NODE:
+      ret += node.data
+  return ret
+  
+def _GetTag(tag, nodes):
+  for root in nodes:
+    for node in _YieldNodes(root):
+      if node.nodeType == xml.dom.Node.ELEMENT_NODE:
+        if node.tagName == tag:
+          return node
+
+def _MakeIndex(content_map):
+  ret = dict()
+  for path, nodes in content_map.iteritems():
+    tag = _GetTag('title', nodes)
+    title = _GetText(tag)
+
+    time = _GetTag('time', nodes)
+    assert time, 'time element not found'
+    time_str = time.getAttribute('datetime')
+
+    print title, time_str
+  
+
 def main():
   logging.basicConfig(level=logging.INFO)
   
@@ -75,6 +102,8 @@ def main():
 
   os.mkdir(output_dir)
   os.chdir(output_dir)
+
+  _MakeIndex(content_map)
 
   for filename, node_list in content_map.iteritems():
     empty_template = template_doc.cloneNode(True)

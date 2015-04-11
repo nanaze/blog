@@ -1,3 +1,8 @@
+<title>Bloomers</title>
+
+
+
+
 You can't push 'em all out, Bloomers
 
 * San Francisco
