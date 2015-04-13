@@ -69,7 +69,7 @@ def _GetTag(tag, nodes):
         if node.tagName == tag:
           return node
 
-def _MakeIndex(content_map):
+def _GetArticles(content_map):
   ret = dict()
   for path, nodes in content_map.iteritems():
     tag = _GetTag('title', nodes)
@@ -79,8 +79,41 @@ def _MakeIndex(content_map):
     assert time, 'time element not found'
     time_str = time.getAttribute('datetime')
 
-    print title, time_str
+    yield (path, title, time_str)
+
+
+def _CreateIndexPage(articles):
+
+  get_date = lambda article_tuple: article_tuple[2]
+  articles = sorted(articles, key=get_date)
   
+  impl = xml.dom.minidom.getDOMImplementation()
+  doc = impl.createDocument(None, None, None)
+  html = doc.createElement('html')
+  body = doc.createElement('body')
+  
+  doc.appendChild(html)
+  html.appendChild(body)
+
+  ul = doc.createElement('ul')
+  body.appendChild(ul)
+      
+  for article in articles:
+    path, title, time_str = article
+    li = doc.createElement('li')
+    ul.appendChild(li)
+
+    a = doc.createElement('a')
+    text = doc.createTextNode(title)
+    a.appendChild(text)
+
+    a.setAttribute('href', path)
+
+    li.appendChild(a)
+
+  return doc
+  
+
 
 def main():
   logging.basicConfig(level=logging.INFO)
@@ -103,8 +136,6 @@ def main():
   os.mkdir(output_dir)
   os.chdir(output_dir)
 
-  _MakeIndex(content_map)
-
   for filename, node_list in content_map.iteritems():
     empty_template = template_doc.cloneNode(True)
     FillElement(empty_template, 'content', node_list)
@@ -113,16 +144,12 @@ def main():
     with open(filename, 'w') as f:
       f.write(empty_template.toxml())
 
+  articles = list(_GetArticles(content_map))
+  index_page = _CreateIndexPage(articles)
 
-
-  
-
-
-  
-    
-    
-    
-
+  logging.info('Writing index at index.html')
+  with open('index.html', 'w') as f:
+    f.write(index_page.toxml())
 
 
 if __name__ == '__main__':
